@@ -7,7 +7,37 @@ let file = "C:\Users\john\Desktop\GRIB Data\Pacific.wind.7days.grb\Pacific.wind.
 let getlen (t:byte[]) =
     let intarr = t |> Array.map (int)
     intarr.[0]*256*256 + intarr.[1]*256 + intarr.[2]
+//this should do some checking on return value
+let readlat b1 b2 b3 = 
+    if b1 &&& 128 = 0 then
+        b1*256*256 + b2*256 + b3
+    else
+        -(b1-128)*256*256 + b2*256 + b3
+//this should also check return value
+let readlon b1 b2 b3 = 
+    if b1 &&& 128 = 0 then
+        b1*256*256 + b2*256 + b3
+    else
+        -(b1-128)*256*256 + b2*256 + b3
 
+let readSectionTwo (t:System.IO.Stream) =
+    let secTwoStartPos = t.Position
+    let buffer = Array.zeroCreate 3
+    t.Read(buffer,0,3) |> ignore //TODO: insert check here
+    let secTwolength = getlen buffer
+    let numVertParams = t.ReadByte()
+    let PV = t.ReadByte() //location of list of vert params or location of list of numbers of points in each row OR 255 if neither
+    let datarepType = t.ReadByte() |> dataRepresentationType
+    printfn "DataRepresentation type is %s" datarepType
+    if datarepType <> "lat/long grid" then
+        failwithf "only doing lat/long grids for now"
+    let ni = 256 * t.ReadByte() + t.ReadByte()
+    let nj = 256 * t.ReadByte() + t.ReadByte()
+    let la1 = readlat <| t.ReadByte() <| t.ReadByte() <| t.ReadByte()
+    let lo1 = readlon <| t.ReadByte() <| t.ReadByte() <| t.ReadByte()
+
+
+    ()
 //section one is the product definition section
 let readSectionOne (t:System.IO.Stream) =
     let secOneStartPos = t.Position
@@ -20,12 +50,8 @@ let readSectionOne (t:System.IO.Stream) =
     let weathercenter = t.ReadByte()
     printfn "Weather center that produced this forecast is %s" (weathercenters.[weathercenter])
     let methodnumber = t.ReadByte() //can get some info on this, but would need to look it up - on a per country basis
-    let gridID = t.ReadByte()
-    match gridID with
-    |21 | 22 | 23 |24 |25 |26 |61|62|63|64 -> printfn "IEG grid"
-    |37|38|39|40|41|42|43|44 -> printfn "thinned grid"
-    |255 -> printfn "file will define grid"
-    |_ -> printfn "Unknown grid type"
+    let gridID = t.ReadByte() |> getMapType
+    printfn "%s" gridID
     let GDSorMDSPresence = t.ReadByte() <> 0
     printfn "GDS/MSD is present %b" GDSorMDSPresence
     let parameterType = parameters.[t.ReadByte()]
@@ -35,12 +61,7 @@ let readSectionOne (t:System.IO.Stream) =
     t.ReadByte() |> ignore
     t.ReadByte() |> ignore
     //next is date of the forecast
-    let yearofcentury = t.ReadByte()
-    let monthOfYear = t.ReadByte()
-    let dayofMonth = t.ReadByte()
-    let hourofDay = t.ReadByte()
-    let minuteofHour = t.ReadByte()
-    let ForecastDate = new DateTime(yearofcentury+2000,monthOfYear,dayofMonth,hourofDay,minuteofHour,0,DateTimeKind.Utc)
+    let ForecastDate = readDate t
     printfn "Forecast date is %O UTC" ForecastDate
     //some information now about when the information is for.  It looks like it is even possible for a single entry to contain multiple forecasts
     //for example, wind every 6 hours is possible
@@ -70,7 +91,7 @@ let readSectionOne (t:System.IO.Stream) =
     let emptybuffer = Array.zeroCreate dummybytes
     t.Read(emptybuffer,0,dummybytes) |> ignore
     printfn "Finished reading section 1"
-    ()
+    readSectionTwo t
 let readHeader (t:System.IO.Stream) =
     let buffer = Array.zeroCreate 8
     let checklen = t.Read(buffer,0,8)
@@ -89,7 +110,7 @@ let readHeader (t:System.IO.Stream) =
             printfn "Edition is %i" edition_number
             readSectionOne t
 
-
+ 
 
 [<EntryPoint>]
 let main argv = 
