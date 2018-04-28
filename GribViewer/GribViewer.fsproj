@@ -63,6 +63,7 @@
     <Content Include="GribDataTypes.csv">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <None Include="Pacific.wind.7days.grb" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />

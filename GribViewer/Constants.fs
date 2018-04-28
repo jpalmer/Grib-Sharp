@@ -34,6 +34,12 @@ let parameters =
     done
     dict entryList
 
+let OtherSectionPresence t = 
+    let GDSPresence = (t&&&128)=128
+    let BMSPresence = (t&&&64)=64
+    printfn "GDS present: %b BMSPresent %b" GDSPresence BMSPresence
+    GDSPresence,BMSPresence
+
 let ForecastTimeUnit t =
     match t with
     |0 -> "minute"
@@ -94,3 +100,18 @@ let dataRepresentationType t =
     |90 -> "space view perspective/orthographic"
     |t when t>90 && t<255 -> "reserved"
     | _ -> failwithf "Unknown data representation type"
+
+let getResolutionFlags t =
+    let directionIncrementsgiven = (128 &&& t) = 128
+    let oblatespheroid = (64 &&& t) = 64
+    //bit 3,4 reserved
+    let uvWindRelativeToGrid = (8 &&& t) = 8 //if false u=east,v=north
+    printf "direction increments %b, oblate spheroid %b, wind directions relative to grid %b" directionIncrementsgiven oblatespheroid uvWindRelativeToGrid
+    directionIncrementsgiven,oblatespheroid,uvWindRelativeToGrid
+
+let getScanningFlags t =
+    let minusIdir = (128 &&& t) = 128
+    let minusJdir = (64 &&& t) = 64
+    let jPointsConsecutive = (32 &&& t) = 32
+    printf "scan in -i direction %b, scan in -j direction %b, j points consecutive %b" minusIdir minusJdir jPointsConsecutive
+    minusIdir, minusJdir, jPointsConsecutive

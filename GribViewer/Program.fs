@@ -2,7 +2,8 @@
 open Constants
 // Learn more about F# at http://fsharp.org
 // See the 'F# Tutorial' project for more help.
-let file = "C:\Users\john\Desktop\GRIB Data\Pacific.wind.7days.grb\Pacific.wind.7days.grb"
+//TODO: automatically download this file
+let file = "Pacific.wind.7days.grb"  //available from here: http://www.globalmarinenet.com/free-grib-file-downloads/
 
 let getlen (t:byte[]) =
     let intarr = t |> Array.map (int)
@@ -13,14 +14,52 @@ let readlat b1 b2 b3 =
         b1*256*256 + b2*256 + b3
     else
         -(b1-128)*256*256 + b2*256 + b3
+
+let readlatFine b1 b2 = 
+    if b1 &&& 128 = 0 then
+        b1*256 + b2
+    else
+        -(b1-128)*256 + b2
+
 //this should also check return value
+
 let readlon b1 b2 b3 = 
     if b1 &&& 128 = 0 then
         b1*256*256 + b2*256 + b3
     else
         -(b1-128)*256*256 + b2*256 + b3
 
-let readSectionTwo (t:System.IO.Stream) =
+let readlonFine b1 b2  = 
+    if b1 &&& 128 = 0 then
+        b1*256 + b2
+    else
+        -(b1-128)*256 + b2
+
+let readBMS (t:System.IO.Stream) =
+    printfn "WARNING - BMS data present but ignored for now - data processing will attempt to continue"
+    let secStartPos = t.Position
+    let buffer = Array.zeroCreate 3
+    t.Read(buffer,0,3) |> ignore //TODO: insert check here
+    let seclength = getlen buffer
+    let dummybytes = (secStartPos + (seclength |> int64) - t.Position) |> int
+    let emptybuffer = Array.zeroCreate dummybytes
+    t.Read(emptybuffer,0,dummybytes) |> ignore
+    printfn "Finished reading BMS"
+
+let readBDS (t:System.IO.Stream) =
+    printfn "WARNING - BMS data present but ignored for now - data processing will attempt to continue"
+    let secStartPos = t.Position
+    let buffer = Array.zeroCreate 3
+    t.Read(buffer,0,3) |> ignore //TODO: insert check here
+    let seclength = getlen buffer
+    let dummybytes = (secStartPos + (seclength |> int64) - t.Position) |> int
+    let emptybuffer = Array.zeroCreate dummybytes
+    t.Read(emptybuffer,0,dummybytes) |> ignore
+    printfn "Finished reading BMS"
+
+
+//grid description section - section 2
+let readGDS (t:System.IO.Stream) = 
     let secTwoStartPos = t.Position
     let buffer = Array.zeroCreate 3
     t.Read(buffer,0,3) |> ignore //TODO: insert check here
@@ -31,12 +70,21 @@ let readSectionTwo (t:System.IO.Stream) =
     printfn "DataRepresentation type is %s" datarepType
     if datarepType <> "lat/long grid" then
         failwithf "only doing lat/long grids for now"
+    //this part is specific to lat/long grids - other types of grids have different formatting
     let ni = 256 * t.ReadByte() + t.ReadByte()
     let nj = 256 * t.ReadByte() + t.ReadByte()
     let la1 = readlat <| t.ReadByte() <| t.ReadByte() <| t.ReadByte()
     let lo1 = readlon <| t.ReadByte() <| t.ReadByte() <| t.ReadByte()
-
-
+    let flags = t.ReadByte() |> getResolutionFlags
+    let la2 = readlat <| t.ReadByte() <| t.ReadByte() <| t.ReadByte()
+    let lo2 = readlon <| t.ReadByte() <| t.ReadByte() <| t.ReadByte()
+    let di = readlatFine <| t.ReadByte() <| t.ReadByte()
+    let dj = readlonFine <| t.ReadByte() <| t.ReadByte()
+    let scanflags = t.ReadByte() |> getScanningFlags
+    let dummybytes = (secTwoStartPos + (secTwolength |> int64) - t.Position) |> int
+    let emptybuffer = Array.zeroCreate dummybytes
+    t.Read(emptybuffer,0,dummybytes) |> ignore
+    printfn "Finished reading section 2"
     ()
 //section one is the product definition section
 let readSectionOne (t:System.IO.Stream) =
@@ -52,8 +100,8 @@ let readSectionOne (t:System.IO.Stream) =
     let methodnumber = t.ReadByte() //can get some info on this, but would need to look it up - on a per country basis
     let gridID = t.ReadByte() |> getMapType
     printfn "%s" gridID
-    let GDSorMDSPresence = t.ReadByte() <> 0
-    printfn "GDS/MSD is present %b" GDSorMDSPresence
+    let GDSPresent,BMSPresent = t.ReadByte() |> OtherSectionPresence
+    
     let parameterType = parameters.[t.ReadByte()]
     printfn "Parameter is %s" parameterType
     //next 3 byets are information about heights for the measurement - ignore for now
@@ -91,7 +139,11 @@ let readSectionOne (t:System.IO.Stream) =
     let emptybuffer = Array.zeroCreate dummybytes
     t.Read(emptybuffer,0,dummybytes) |> ignore
     printfn "Finished reading section 1"
-    readSectionTwo t
+    if GDSPresent then
+        readGDS t
+    if BMSPresent then
+        readBMS t
+    ()
 let readHeader (t:System.IO.Stream) =
     let buffer = Array.zeroCreate 8
     let checklen = t.Read(buffer,0,8)
