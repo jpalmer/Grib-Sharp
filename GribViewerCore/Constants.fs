@@ -21,18 +21,12 @@ let weathercenters =
             (99,"DeBilt, Netherlands");
         ] 
 
-let parameters = 
-    let reader = new Microsoft.VisualBasic.FileIO.TextFieldParser("GribDataTypes.csv")
-    reader.SetDelimiters(",")
-    let entryList = new ResizeArray<_>()
-    reader.ReadLine() |> ignore //ignore header line
-    while reader.EndOfData |> not do
-        let fields = reader.ReadFields()
-        let ID = fields.[0] |> int
-        let measurementType = fields.[1]
-        entryList.Add(ID,measurementType)
-    done
-    dict entryList
+let parameters =
+    System.IO.File.ReadAllLines("GribDataTypes.csv")
+    |> Array.map (fun t -> t.Split(','))
+    |> Array.map (fun t -> (t.[0] |> int),t.[1])
+    |> dict
+
 
 let OtherSectionPresence t = 
     let GDSPresence = (t&&&128)=128

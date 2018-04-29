@@ -1,4 +1,6 @@
-﻿open System
+﻿module Core
+
+open System
 open Constants
 // Learn more about F# at http://fsharp.org
 // See the 'F# Tutorial' project for more help.
@@ -6,8 +8,10 @@ open Constants
 let file = "Pacific.wind.7days.grb"  //available from here: http://www.globalmarinenet.com/free-grib-file-downloads/
 
 let getlen (t:byte[]) =
-    let intarr = t |> Array.map (int)
-    intarr.[0]*256*256 + intarr.[1]*256 + intarr.[2]
+    if t.Length < 3 then 0
+    else
+        let intarr = t |> Array.map (int)
+        intarr.[0]*256*256 + intarr.[1]*256 + intarr.[2]
 //this should do some checking on return value
 let readlat b1 b2 b3 = 
     if b1 &&& 128 = 0 then
@@ -164,7 +168,7 @@ let readHeader (t:System.IO.Stream) =
 
  
 
-[<EntryPoint>]
+
 let main argv = 
     let data = System.IO.File.OpenRead(file)
     readHeader(data)

@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <DebugType>portable</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -9,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="coveralls.net" Version="0.7.0" />
     <PackageReference Include="coverlet.msbuild" Version="1.1.1" />
     <PackageReference Include="FsCheck" Version="2.10.9" />
     <PackageReference Include="FsCheck.Xunit" Version="2.10.9" />

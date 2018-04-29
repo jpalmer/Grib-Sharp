@@ -5,3 +5,4 @@ script:
   - dotnet restore
   - dotnet build ./GribTests/
   - dotnet test ./GribTests/
+  - .nuget/packages/coveralls.net/0.7.0/tools/csmacnz.Coveralls.exe --opencover -i GribTests/coverage.xml  --useRelativePaths

@@ -1,0 +1,16 @@
+configuration:
+  - Debug
+install:
+    - nuget restore
+    
+before_build:
+  - cmd: dotnet build GribViewer.sln
+
+environment:
+    COVERALLS_REPO_TOKEN:  
+       secure: sbsbi0ah6fSXCGhUl+GWJlLcjfxudCTz3/UZdXVNW3daYx64UfqN2G9tel7Q4MVh
+ 
+test_script:
+  - cmd: cd GribTests
+  - cmd: dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
+  - cmd: IF "%CONFIGURATION%"=="Debug"  (%USERPROFILE%\.nuget\packages\coveralls.net\0.7.0\tools\csmacnz.Coveralls.exe --opencover -i coverage.xml --useRelativePaths)

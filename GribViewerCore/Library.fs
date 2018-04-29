@@ -5,3 +5,6 @@ module Say =
         printfn "Hello %s" name
     let testfn arg = 
         true
+    type testytype() =
+        member x.TestFunc() = true
+        
