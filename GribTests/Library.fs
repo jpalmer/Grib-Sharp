@@ -17,3 +17,6 @@ module Core =
     [<Xunit.FactAttribute>]
     let test4 () =
         true
+    [<Property>]
+    let test5 arg = 
+        Core.getlen arg >= 0
