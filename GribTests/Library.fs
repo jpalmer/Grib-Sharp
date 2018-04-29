@@ -9,3 +9,6 @@ module Core =
     let ``Simple passing test``(xs:list<int>) =
       true
       
+    [<Property>]
+    let test (i:int) =
+        GribViewerCore.Say.testfn i
