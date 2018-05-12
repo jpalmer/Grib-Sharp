@@ -39,15 +39,39 @@ let readlonFine b1 b2  =
     else
         -(b1-128)*256 + b2
 
-let readBMS (t:System.IO.Stream) =
-    printfn "WARNING - BMS data present but ignored for now - data processing will attempt to continue"
+type BMS (data:byte[] ,x, y) =
+    do printfn "x = %i y = %i expected size %i actual size %i" x y ((x * y)/8) (data.Length)
+    member x.checkpos t = 
+        let bytenumber = t/8;
+        let bit = 1 <<< (t % 8) |> byte
+        (data.[bytenumber] &&&  bit) <> 0uy
+        //TODO - method to print based on grid size
+    member this.print() =
+        printfn "Bitmap from BMS - x length %i y length %i" x y
+        for i in 0..(y-1) do 
+            for j in 0..(x-1) do
+                match this.checkpos <| i*x+j with
+                |true -> printf "X"
+                |false -> printf "."
+            printfn ""
+//The BMS defines a section in the following way - each bit lets you know if a point is available
+//Useful for example - you have data which is sea temperature - black out the non-sea points
+let readBMS (t:System.IO.Stream) xpoints ypoints =
+    printfn "Reading BMS section (bitmap used for specifying which data is present)"
     let secStartPos = t.Position
     let buffer = Array.zeroCreate 3
     t.Read(buffer,0,3) |> ignore //TODO: insert check here
+    let unusedbytes = t.ReadByte() |> fun t -> 0 //this is the number of unused bytes - ignore for now to make things work
     let seclength = getlen buffer
-    let dummybytes = (secStartPos + (seclength |> int64) - t.Position) |> int
-    let emptybuffer = Array.zeroCreate dummybytes
-    t.Read(emptybuffer,0,dummybytes) |> ignore
+    if (t.ReadByte() = 0 && t.ReadByte() = 0) then //otherwise there is a predefined bitmap
+        let databytes = (secStartPos + (seclength |> int64) - t.Position - (int64 unusedbytes)) |> int
+        let databuffer :byte [] = Array.zeroCreate databytes
+        t.Read(databuffer,0,databytes - unusedbytes) |> ignore
+        new BMS(databuffer,xpoints,ypoints) |> fun t -> t.print()
+        let unusedbytesarr = Array.zeroCreate unusedbytes
+        t.Read(unusedbytesarr,0,unusedbytes) |> ignore
+    else
+        //TODO: handle predefined bitmap
     printfn "Finished reading BMS"
 
 let readBDS (t:System.IO.Stream) =
@@ -71,7 +95,7 @@ let readGDS (t:System.IO.Stream) =
     let numVertParams = t.ReadByte()
     let PV = t.ReadByte() //location of list of vert params or location of list of numbers of points in each row OR 255 if neither
     let datarepType = t.ReadByte() |> dataRepresentationType
-    printfn "DataRepresentation type is %s" datarepType
+    printfn "Data Representation type is %s" datarepType
     if datarepType <> "lat/long grid" then
         failwithf "only doing lat/long grids for now"
     //this part is specific to lat/long grids - other types of grids have different formatting
@@ -89,7 +113,7 @@ let readGDS (t:System.IO.Stream) =
     let emptybuffer = Array.zeroCreate dummybytes
     t.Read(emptybuffer,0,dummybytes) |> ignore
     printfn "Finished reading section 2"
-    ()
+    ni,nj
 //section one is the product definition section
 let readSectionOne (t:System.IO.Stream) =
     let secOneStartPos = t.Position
@@ -144,9 +168,9 @@ let readSectionOne (t:System.IO.Stream) =
     t.Read(emptybuffer,0,dummybytes) |> ignore
     printfn "Finished reading section 1"
     if GDSPresent then
-        readGDS t
-    if BMSPresent then
-        readBMS t
+        let x,y = readGDS t
+        if BMSPresent then
+            readBMS t x y
     ()
 let readHeader (t:System.IO.Stream) =
     let buffer = Array.zeroCreate 8
