@@ -12,8 +12,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="GribDataTypes.csv" />
-    <None Include="Pacific.wind.7days.grb" />
+    <None Include="GribDataTypes.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Pacific.wind.7days.grb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

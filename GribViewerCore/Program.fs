@@ -51,7 +51,7 @@ let readBMS (t:System.IO.Stream) =
     printfn "Finished reading BMS"
 
 let readBDS (t:System.IO.Stream) =
-    printfn "WARNING - BMS data present but ignored for now - data processing will attempt to continue"
+    printfn "WARNING - BDS data present but ignored for now - data processing will attempt to continue"
     let secStartPos = t.Position
     let buffer = Array.zeroCreate 3
     t.Read(buffer,0,3) |> ignore //TODO: insert check here

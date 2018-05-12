@@ -23,6 +23,7 @@ let weathercenters =
 
 let parameters =
     System.IO.File.ReadAllLines("GribDataTypes.csv")
+    |> Array.skip (1) //skip header line
     |> Array.map (fun t -> t.Split(','))
     |> Array.map (fun t -> (t.[0] |> int),t.[1])
     |> dict
