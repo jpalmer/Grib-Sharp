@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <OutputType>Library</OutputType>
     <DebugType>portable</DebugType>
+    <Configurations>Debug;Release;AppVeyor</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
