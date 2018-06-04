@@ -1,0 +1,257 @@
+VALUE,PARAMETER,UNITS
+0,Reserved,
+1,Pressure,Pa
+2,Pressure reduced to MSL,Pa
+3,Pressure tendency,Pa/s
+4,,
+5,,
+6,Geopotential,m2/s2
+7,Geopotential height,Gpm
+8,Geometric height,M
+9,Standard deviation of height,M
+10,,
+11,Temperature,K
+12,Virtual temperature,K
+13,Potential temperature,K
+14,Pseudo-adiabatic potential temperature,K
+15,Maximum temperature,K
+16,Minimum temperature,K
+17,Dew point temperature,K
+18,Dew point depression (or deficit),K
+19,Lapse rate,K/m
+20,Visibility,M
+21,Radar Spectra (1),-
+22,Radar Spectra (2),-
+23,Radar Spectra (3),-
+24,,
+25,Temperature anomaly,K
+26,Pressure anomaly,Pa
+27,Geopotential height anomaly,Gpm
+28,Wave Spectra (1),-
+29,Wave Spectra (2),-
+30,Wave Spectra (3),-
+31,Wind direction,Deg. true
+32,Wind speed,m/s
+33,u-component of wind,m/s
+34,v-component of wind,m/s
+35,Stream function,m2/s
+36,Velocity potential,m2/s
+37,Montgomery stream function,m2/s2
+38,Sigma coord. vertical velocity,s /s
+39,Pressure Vertical velocity,Pa/s
+40,Geometric Vertical velocity,m/s
+41,Absolute vorticity,/s
+42,Absolute divergence,/s
+43,Relative vorticity,/s
+44,Relative divergence,/s
+45,Vertical u-component shear,/s
+46,Vertical v-component shear,/s
+47,Direction of current,Deg. true
+48,Speed of current,m/s
+49,u-component of current,m/s
+50,v-component of current,m/s
+51,Specific humidity,kg/kg
+52,Relative humidity,%
+53,Humidity mixing ratio,kg/kg
+54,Precipitable water,kg/m2
+55,Vapor pressure,Pa
+56,Saturation deficit,Pa
+57,Evaporation,kg/m2
+58,Cloud Ice,kg/m2
+59,Precipitation rate,kg/m2/s
+60,Thunderstorm probability,%
+61,Total precipitation,kg/m2
+62,Large scale precipitation,kg/m2
+63,Convective precipitation,kg/m2
+64,Snowfall rate water equivalent,kg/m2s
+65,Water equiv. of accum. snow depth,kg/m2
+66,Snow depth,M
+67,Mixed layer depth,M
+68,Transient thermocline depth,M
+69,Main thermocline depth,M
+70,Main thermocline anomaly,M
+71,Total cloud cover,%
+72,Convective cloud cover,%
+73,Low cloud cover,%
+74,Medium cloud cover,%
+75,High cloud cover,%
+76,Cloud water,kg/m2
+77,,
+78,Convective snow,kg/m2
+79,Large scale snow,kg/m2
+80,Water Temperature,K
+81,Land-sea mask,Fraction
+82,Deviation of sea level from mean,M
+83,Surface roughness,M
+84,Albedo,%
+85,Soil temperature,K
+86,Soil moisture content,kg/m2
+87,Vegetation,%
+88,Salinity,kg/kg
+89,Density,kg/m3
+90,Water run off,kg/m2
+91,Ice concentration,Fraction
+92,Ice thickness,M
+93,Direction of ice drift,deg. true
+94,Speed of ice drift,m/s
+95,u-component of ice drift,m/s
+96,v-component of ice drift,m/s
+97,Ice growth rate,m/s
+98,Ice divergence,/s
+99,Snow melt,kg/m2
+100,Significant height of combined wind,m
+101,Direction of wind waves,deg. true
+102,Significant height of wind waves,m
+103,Mean period of wind waves,s
+104,Direction of swell waves,deg. true
+105,Significant height of swell waves,m
+106,Mean period of swell waves,s
+107,Primary wave direction,deg. true
+108,Primary wave mean period,s
+109,Secondary wave direction,deg. true
+110,Secondary wave mean period,s
+111,Net short-wave radiation (surface),W/m2
+112,Net long wave radiation (surface),W/m2
+113,Net short-wave radiation (top of atmos.),W/m2
+114,Net long wave radiation (top of atmos.),W/m2
+115,Long wave radiation,W/m2
+116,Short wave radiation,W/m2
+117,Global radiation,W/m2
+118,,
+119,,
+120,,
+121,Latent heat net flux,W/m2
+122,Sensible heat net flux,W/m2
+123,Boundary layer dissipation,W/m2
+124,"Momentum flux, u component",N/m2
+125,"Momentum flux, v component",N/m2
+126,Wind mixing energy,J
+127,Image data,
+128,Reserved,
+129,Reserved,
+130,Reserved,
+131,Reserved,
+132,Reserved,
+133,Reserved,
+134,Reserved,
+135,Reserved,
+136,Reserved,
+137,Reserved,
+138,Reserved,
+139,Reserved,
+140,Reserved,
+141,Reserved,
+142,Reserved,
+143,Reserved,
+144,Reserved,
+145,Reserved,
+146,Reserved,
+147,Reserved,
+148,Reserved,
+149,Reserved,
+150,Reserved,
+151,Reserved,
+152,Reserved,
+153,Reserved,
+154,Reserved,
+155,Reserved,
+156,Reserved,
+157,Reserved,
+158,Reserved,
+159,Reserved,
+160,Reserved,
+161,Reserved,
+162,Reserved,
+163,Reserved,
+164,Reserved,
+165,Reserved,
+166,Reserved,
+167,Reserved,
+168,Reserved,
+169,Reserved,
+170,Reserved,
+171,Reserved,
+172,Reserved,
+173,Reserved,
+174,Reserved,
+175,Reserved,
+176,Reserved,
+177,Reserved,
+178,Reserved,
+179,Reserved,
+180,Reserved,
+181,Reserved,
+182,Reserved,
+183,Reserved,
+184,Reserved,
+185,Reserved,
+186,Reserved,
+187,Reserved,
+188,Reserved,
+189,Reserved,
+190,Reserved,
+191,Reserved,
+192,Reserved,
+193,Reserved,
+194,Reserved,
+195,Reserved,
+196,Reserved,
+197,Reserved,
+198,Reserved,
+199,Reserved,
+200,Reserved,
+201,Reserved,
+202,Reserved,
+203,Reserved,
+204,Reserved,
+205,Reserved,
+206,Reserved,
+207,Reserved,
+208,Reserved,
+209,Reserved,
+210,Reserved,
+211,Reserved,
+212,Reserved,
+213,Reserved,
+214,Reserved,
+215,Reserved,
+216,Reserved,
+217,Reserved,
+218,Reserved,
+219,Reserved,
+220,Reserved,
+221,Reserved,
+222,Reserved,
+223,Reserved,
+224,Reserved,
+225,Reserved,
+226,Reserved,
+227,Reserved,
+228,Reserved,
+229,Reserved,
+230,Reserved,
+231,Reserved,
+232,Reserved,
+233,Reserved,
+234,Reserved,
+235,Reserved,
+236,Reserved,
+237,Reserved,
+238,Reserved,
+239,Reserved,
+240,Reserved,
+241,Reserved,
+242,Reserved,
+243,Reserved,
+244,Reserved,
+245,Reserved,
+246,Reserved,
+247,Reserved,
+248,Reserved,
+249,Reserved,
+250,Reserved,
+251,Reserved,
+252,Reserved,
+253,Reserved,
+254,Reserved,
+255,Missing,

@@ -3,11 +3,10 @@
 open System
 open Constants
 open System.Diagnostics
+open System.Drawing
+open Utils
 
-// Learn more about F# at http://fsharp.org
-// See the 'F# Tutorial' project for more help.
-//TODO: automatically download this file
-let file = "Pacific.wind.7days.grb"  //available from here: http://www.globalmarinenet.com/free-grib-file-downloads/
+//GRIB file is downloaded from http://www.globalmarinenet.com/free-grib-file-downloads/
 
 let getlen (t:byte[]) =
     if t.Length < 3 then 0
@@ -83,7 +82,7 @@ let getBDSFlags (t:byte) =
     let packingtype = match t &&& 1uy = 0uy with
                       |true -> GridPoint
                       |false -> SphericalHarmonic
-    let packingOrder = match t &&& 2uy = 0uy with
+    let packingOrder =match t &&& 2uy = 0uy with
                       |true -> Simple
                       |false -> Complex
     let dataType = match t &&& 4uy = 0uy with
@@ -124,6 +123,7 @@ let readBDS (t:System.IO.Stream) =
     let remainingBytes = (secStartPos + (seclength |> int64) - t.Position) |> int
     let emptybuffer = Array.zeroCreate remainingBytes
     t.Read(emptybuffer,0,remainingBytes) |> ignore
+    let output = new ResizeArray<_>()
     let bitarray = new System.Collections.BitArray(emptybuffer)
     for i in 0 .. bitsperpoint .. (bitarray.Length-bitsperpoint) do
         let mybits = new System.Collections.BitArray(bitsperpoint)
@@ -131,9 +131,11 @@ let readBDS (t:System.IO.Stream) =
             mybits.[j] <- bitarray.[i+j]
         let myint = mybits |> Utils.getIntFromBitArray |> float32
         let value = minvalue + (myint * (pown 2.0f E))
+        output.Add(value)
+
         printfn "%f" value
     printfn "Finished reading BDS"
-    1
+    output
 
 //grid description section - section 2
 let readGDS (t:System.IO.Stream) = 
@@ -221,17 +223,16 @@ let readSectionOne (t:System.IO.Stream) =
         if BMSPresent then
             readBMS t x y
     readBDS t
-    ()
 let readHeader (t:System.IO.Stream) =
     let buffer = Array.zeroCreate 8
     let checklen = t.Read(buffer,0,8)
     if (checklen <> 8) then
-        printf "Unable to read any header data - not enough data in stream"
+        failwithf "Unable to read any header data - not enough data in stream"
     else
         let gribchars = buffer.[0..3]
         let str = new string(System.Text.ASCIIEncoding.ASCII.GetChars(gribchars))
         if (str <> "GRIB") then
-            printfn "Header data is invalid - expected \"GRIB\" but got %s" str
+            failwithf "Header data is invalid - expected \"GRIB\" but got %s" str
         else
             let len = buffer.[4..6] |> Array.map(fun t ->int t)
             let totallen = buffer.[4..6] |> getlen
@@ -242,11 +243,8 @@ let readHeader (t:System.IO.Stream) =
 
  
 
-
 let main argv = 
-    let data = System.IO.File.OpenRead(file)
-    readHeader(data)
-    
-   
+    let t = ClassLibrary1.Properties.Resources.Pacific_wind_7days
+    readHeader(new System.IO.MemoryStream(t)) |> ignore
     System.Console.ReadKey(true) |> ignore
     0 // return an integer exit code

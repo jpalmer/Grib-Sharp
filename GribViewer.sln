@@ -14,6 +14,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Runner", "Runner\Runner.fsproj", "{84243462-B7DD-46AC-9228-312539B0E5E2}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebViewer", "WebViewer\WebViewer.csproj", "{30F7EE36-85A7-4292-B0D8-CE742389D467}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ReferenceFiles", "ReferenceFiles\ReferenceFiles.csproj", "{88497EF2-F368-4328-B2C8-E6628A62E68A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		AppVeyor|Any CPU = AppVeyor|Any CPU
@@ -38,6 +42,18 @@ Global
 		{84243462-B7DD-46AC-9228-312539B0E5E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84243462-B7DD-46AC-9228-312539B0E5E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84243462-B7DD-46AC-9228-312539B0E5E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30F7EE36-85A7-4292-B0D8-CE742389D467}.AppVeyor|Any CPU.ActiveCfg = Debug|Any CPU
+		{30F7EE36-85A7-4292-B0D8-CE742389D467}.AppVeyor|Any CPU.Build.0 = Debug|Any CPU
+		{30F7EE36-85A7-4292-B0D8-CE742389D467}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30F7EE36-85A7-4292-B0D8-CE742389D467}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30F7EE36-85A7-4292-B0D8-CE742389D467}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30F7EE36-85A7-4292-B0D8-CE742389D467}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88497EF2-F368-4328-B2C8-E6628A62E68A}.AppVeyor|Any CPU.ActiveCfg = Debug|Any CPU
+		{88497EF2-F368-4328-B2C8-E6628A62E68A}.AppVeyor|Any CPU.Build.0 = Debug|Any CPU
+		{88497EF2-F368-4328-B2C8-E6628A62E68A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88497EF2-F368-4328-B2C8-E6628A62E68A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88497EF2-F368-4328-B2C8-E6628A62E68A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88497EF2-F368-4328-B2C8-E6628A62E68A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
