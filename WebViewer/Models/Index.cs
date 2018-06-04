@@ -10,7 +10,7 @@ namespace WebViewer.Models
         public List<float> ForecastValues { get; set; }
         public void test()
         {
-            var t = ClassLibrary1.Properties.Resources.Pacific_wind_7days;
+            var t = ReferenceFiles.Properties.Resources.Pacific_wind_7days;
             ForecastValues = Core.readHeader(new System.IO.MemoryStream(t));
         }
     }

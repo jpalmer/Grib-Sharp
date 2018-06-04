@@ -12,7 +12,7 @@ namespace WebViewer.Pages
         public List<float> values { get; set; }
         public void OnGet()
         {
-            var t = ClassLibrary1.Properties.Resources.Pacific_wind_7days;
+            var t = ReferenceFiles.Properties.Resources.Pacific_wind_7days;
             values = Core.readHeader(new System.IO.MemoryStream(t));
         }
     }

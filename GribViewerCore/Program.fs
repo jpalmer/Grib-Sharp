@@ -244,7 +244,7 @@ let readHeader (t:System.IO.Stream) =
  
 
 let main argv = 
-    let t = ClassLibrary1.Properties.Resources.Pacific_wind_7days
+    let t = ReferenceFiles.Properties.Resources.Pacific_wind_7days
     readHeader(new System.IO.MemoryStream(t)) |> ignore
     System.Console.ReadKey(true) |> ignore
     0 // return an integer exit code

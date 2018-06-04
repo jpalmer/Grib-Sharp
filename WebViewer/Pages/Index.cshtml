@@ -3,5 +3,9 @@
 @{
     ViewData["Title"] = "Home page";
 }
-
-@Model.values.First().ToString()
+Start of the C#
+@foreach (var value in Model.values)
+{
+    @(value.ToString() + "  ");
+}
+End of the C#
