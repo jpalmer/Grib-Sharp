@@ -12,4 +12,9 @@
     <ProjectReference Include="..\GribViewerCore\GribViewerCore.fsproj" />
     <ProjectReference Include="..\ReferenceFiles\ReferenceFiles.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Update="wwwroot\world.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 </Project>
