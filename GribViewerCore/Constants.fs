@@ -101,12 +101,12 @@ let getResolutionFlags t =
     let oblatespheroid = (64 &&& t) = 64
     //bit 3,4 reserved
     let uvWindRelativeToGrid = (8 &&& t) = 8 //if false u=east,v=north
-    printf "direction increments %b, oblate spheroid %b, wind directions relative to grid %b" directionIncrementsgiven oblatespheroid uvWindRelativeToGrid
+    printfn "direction increments %b, oblate spheroid %b, wind directions relative to grid %b" directionIncrementsgiven oblatespheroid uvWindRelativeToGrid
     directionIncrementsgiven,oblatespheroid,uvWindRelativeToGrid
 
 let getScanningFlags t =
     let minusIdir = (128 &&& t) = 128
     let minusJdir = (64 &&& t) = 64
     let jPointsConsecutive = (32 &&& t) = 32
-    printf "scan in -i direction %b, scan in -j direction %b, j points consecutive %b" minusIdir minusJdir jPointsConsecutive
+    printfn "scan in -i direction %b, scan in -j direction %b, j points consecutive %b" minusIdir minusJdir jPointsConsecutive
     minusIdir, minusJdir, jPointsConsecutive

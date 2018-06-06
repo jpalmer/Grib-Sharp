@@ -7,7 +7,8 @@ open System.Drawing
 open Utils
 
 //GRIB file is downloaded from http://www.globalmarinenet.com/free-grib-file-downloads/
-
+//XY Grib appears to be capable of viewing this file - is very useful
+//TODO for tomorrow - tests around reading the grid section of a sample file
 let getlen (t:byte[]) =
     if t.Length < 3 then 0
     else
@@ -15,6 +16,7 @@ let getlen (t:byte[]) =
         intarr.[0]*256*256 + intarr.[1]*256 + intarr.[2]
 //this should do some checking on return value
 let readlat b1 b2 b3 = 
+    printfn "%i %i %i" b1 b2 b3
     if b1 &&& 128 = 0 then
         b1*256*256 + b2*256 + b3
     else
@@ -133,7 +135,7 @@ let readBDS (t:System.IO.Stream) =
         let value = minvalue + (myint * (pown 2.0f E))
         output.Add(value)
 
-        printfn "%f" value
+       // printfn "%f" value
     printfn "Finished reading BDS"
     output
 
@@ -150,7 +152,8 @@ let readGDS (t:System.IO.Stream) =
     if datarepType <> "lat/long grid" then
         failwithf "only doing lat/long grids for now"
     //this part is specific to lat/long grids - other types of grids have different formatting
-    let ni = 256 * t.ReadByte() + t.ReadByte()
+    //CONFUSING NOTE - i is used for east west, but latitude is read first (N/S)
+    let ni = 256 * t.ReadByte() + t.ReadByte() //number of points for lat/lon
     let nj = 256 * t.ReadByte() + t.ReadByte()
     let la1 = readlat <| t.ReadByte() <| t.ReadByte() <| t.ReadByte()
     let lo1 = readlon <| t.ReadByte() <| t.ReadByte() <| t.ReadByte()
@@ -163,6 +166,8 @@ let readGDS (t:System.IO.Stream) =
     let dummybytes = (secTwoStartPos + (secTwolength |> int64) - t.Position) |> int
     let emptybuffer = Array.zeroCreate dummybytes
     t.Read(emptybuffer,0,dummybytes) |> ignore
+    printfn "Starting latitude is %d with %i increments of %d and a final latitude of %d" la1 nj dj la2
+    printfn "Starting longitude is %d with %i increments of %d and a final longitude of %d" lo1 ni di lo2
     printfn "Finished reading section 2"
     ni,nj
 //section one is the product definition section
