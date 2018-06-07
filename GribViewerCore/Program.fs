@@ -44,16 +44,21 @@ let readlonFine b1 b2  =
 
 type BMS (data:byte[] ,x, y) =
     do printfn "x = %i y = %i expected size %i actual size %i" x y ((x * y)/8) (data.Length)
+    //so - for some fun reason the C# bitarray is viewing the bits in the wrong order
+    //this code apparently reverses a byte - magic bit twiddling from stack overflow 
+    //(does seem crazy that 4 operations on 64 bit integers is a sane way to do this
+    do for i in 0 .. (data.Length-1) do
+        data.[i] <-  ((((uint64 data.[i]) * 0x80200802uL) &&& 0x0884422110uL) * 0x0101010101uL >>> 32) |> byte;
+    let bitarray = new System.Collections.BitArray(data)
     member x.checkpos t = 
-        let bytenumber = t/8;
-        let bit = 1 <<< (t % 8) |> byte
-        (data.[bytenumber] &&&  bit) <> 0uy
-        //TODO - method to print based on grid size
+        bitarray.[t]
     member this.print() =
         printfn "Bitmap from BMS - x length %i y length %i" x y
-        for i in 0..(y-1) do 
-            for j in 0..(x-1) do
-                match this.checkpos <| i*x+j with
+        for j in (y-1)..(-1)..(0) do 
+            for i in 0..(x-1) do
+                if i % 10 = 0 then 
+                    printf " "
+                match this.checkpos <| j*(x)+i with
                 |true -> printf "X"
                 |false -> printf "."
             printfn ""
@@ -64,17 +69,21 @@ let readBMS (t:System.IO.Stream) xpoints ypoints =
     let secStartPos = t.Position
     let buffer = Array.zeroCreate 3
     t.Read(buffer,0,3) |> ignore //TODO: insert check here
-    let unusedbytes = t.ReadByte() |> fun t -> 0 //this is the number of unused bytes - ignore for now to make things work
+    let unusedbytes = t.ReadByte() |> fun t -> 0 //this is the number of unused bytes - ignore for now to make things work - may need to think about this a little - why is the extra byte needed?
     let seclength = getlen buffer
     if (t.ReadByte() = 0 && t.ReadByte() = 0) then //otherwise there is a predefined bitmap
         let databytes = (secStartPos + (seclength |> int64) - t.Position - (int64 unusedbytes)) |> int
         let databuffer :byte [] = Array.zeroCreate databytes
-        t.Read(databuffer,0,databytes - unusedbytes) |> ignore
+        t.Read(databuffer,0,databytes) |> ignore
         new BMS(databuffer,xpoints,ypoints) |> fun t -> t.print()
         let unusedbytesarr = Array.zeroCreate unusedbytes
         t.Read(unusedbytesarr,0,unusedbytes) |> ignore
     else
+        ()
         //TODO: handle predefined bitmap
+    if t.Position <> secStartPos + (seclength|>int64) then
+        printfn "read too many bytes"
+
     printfn "Finished reading BMS"
 
 type PackingType = |GridPoint |SphericalHarmonic
