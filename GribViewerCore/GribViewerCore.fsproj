@@ -10,7 +10,9 @@
   <ItemGroup>
     <Compile Include="Utils.fs" />
     <Compile Include="Constants.fs" />
-    <Compile Include="Program.fs" />
+    <Compile Include="GDS.fs" />
+    <Compile Include="BMS.fs" />
+    <Compile Include="Core.fs" />
   </ItemGroup>
 
   <ItemGroup>

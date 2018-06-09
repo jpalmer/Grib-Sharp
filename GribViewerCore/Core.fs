@@ -2,89 +2,16 @@
 
 open System
 open Constants
-open System.Diagnostics
-open System.Drawing
 open Utils
-
+open BMS
+open GDS
 //GRIB file is downloaded from http://www.globalmarinenet.com/free-grib-file-downloads/
 //XY Grib appears to be capable of viewing this file - is very useful
 //TODO for tomorrow - tests around reading the grid section of a sample file
-let getlen (t:byte[]) =
-    if t.Length < 3 then 0
-    else
-        let intarr = t |> Array.map (int)
-        intarr.[0]*256*256 + intarr.[1]*256 + intarr.[2]
-//this should do some checking on return value
-let readlat b1 b2 b3 = 
-    printfn "%i %i %i" b1 b2 b3
-    if b1 &&& 128 = 0 then
-        b1*256*256 + b2*256 + b3
-    else
-        -(b1-128)*256*256 + b2*256 + b3
 
-let readlatFine b1 b2 = 
-    if b1 &&& 128 = 0 then
-        b1*256 + b2
-    else
-        -(b1-128)*256 + b2
 
-//this should also check return value
 
-let readlon b1 b2 b3 = 
-    if b1 &&& 128 = 0 then
-        b1*256*256 + b2*256 + b3
-    else
-        -(b1-128)*256*256 + b2*256 + b3
 
-let readlonFine b1 b2  = 
-    if b1 &&& 128 = 0 then
-        b1*256 + b2
-    else
-        -(b1-128)*256 + b2
-
-type BMS (data:byte[] ,x, y) =
-    do printfn "x = %i y = %i expected size %i actual size %i" x y ((x * y)/8) (data.Length)
-    //so - for some fun reason the C# bitarray is viewing the bits in the wrong order
-    //this code apparently reverses a byte - magic bit twiddling from stack overflow 
-    //(does seem crazy that 4 operations on 64 bit integers is a sane way to do this
-    do for i in 0 .. (data.Length-1) do
-        data.[i] <-  ((((uint64 data.[i]) * 0x80200802uL) &&& 0x0884422110uL) * 0x0101010101uL >>> 32) |> byte;
-    let bitarray = new System.Collections.BitArray(data)
-    member x.checkpos t = 
-        bitarray.[t]
-    member this.print() =
-        printfn "Bitmap from BMS - x length %i y length %i" x y
-        for j in (y-1)..(-1)..(0) do 
-            for i in 0..(x-1) do
-                if i % 10 = 0 then 
-                    printf " "
-                match this.checkpos <| j*(x)+i with
-                |true -> printf "X"
-                |false -> printf "."
-            printfn ""
-//The BMS defines a section in the following way - each bit lets you know if a point is available
-//Useful for example - you have data which is sea temperature - black out the non-sea points
-let readBMS (t:System.IO.Stream) xpoints ypoints =
-    printfn "Reading BMS section (bitmap used for specifying which data is present)"
-    let secStartPos = t.Position
-    let buffer = Array.zeroCreate 3
-    t.Read(buffer,0,3) |> ignore //TODO: insert check here
-    let unusedbytes = t.ReadByte() |> fun t -> 0 //this is the number of unused bytes - ignore for now to make things work - may need to think about this a little - why is the extra byte needed?
-    let seclength = getlen buffer
-    if (t.ReadByte() = 0 && t.ReadByte() = 0) then //otherwise there is a predefined bitmap
-        let databytes = (secStartPos + (seclength |> int64) - t.Position - (int64 unusedbytes)) |> int
-        let databuffer :byte [] = Array.zeroCreate databytes
-        t.Read(databuffer,0,databytes) |> ignore
-        new BMS(databuffer,xpoints,ypoints) |> fun t -> t.print()
-        let unusedbytesarr = Array.zeroCreate unusedbytes
-        t.Read(unusedbytesarr,0,unusedbytes) |> ignore
-    else
-        ()
-        //TODO: handle predefined bitmap
-    if t.Position <> secStartPos + (seclength|>int64) then
-        printfn "read too many bytes"
-
-    printfn "Finished reading BMS"
 
 type PackingType = |GridPoint |SphericalHarmonic
 type PackingOrder = |Simple |Complex
@@ -106,6 +33,36 @@ let getBDSFlags (t:byte) =
     printfn "Packing order %A" packingOrder //simple
     printfn "data type %A" dataType //floating data
     packingtype,packingOrder,dataType,AdditionalFlags
+//needs functions for total windspeed and direction
+type Point = 
+    {
+        Lat : double; // in millidegrees
+        Long : double; // in millidegrees
+        UWind : float32; // in m/s
+        VWind : float32; // in m/s
+    }
+    member x.Print =
+        sprintf "Lat: %f Long %f UWind %f VWind %f" x.Lat x.Long x.UWind x.VWind
+
+let BuildPointList (bms:BMS) (data: _ []) (gds : GDS) =
+    //need to make configurable - but for now assume data is read in the sane order
+    //potentially data could be stored in a different order in other files
+    //Also need to improve to allow for vwind - as well as uwind
+    let mutable dataindex = 0
+    let output = new ResizeArray<_>()
+    for j in ((gds.LatRange |> Array.length)  - 1) .. (-1) .. 0 do
+        for i in 0 .. ((gds.LongRange|> Array.length) - 1) do
+            if bms.checkpos i j then
+                output.Add(
+                    {
+                        Lat = gds.LatRange.[j];
+                        Long = gds.LongRange.[i];
+                        UWind = data.[dataindex];
+                        VWind = 0.0f;
+                    })
+                dataindex <- dataindex+1
+    output
+
 let readE b1 b2 = 
     //E is the following - initial sign bit and then 15 other bits (int16)
     let i1,i2 = int b1,int b2
@@ -148,37 +105,6 @@ let readBDS (t:System.IO.Stream) =
     printfn "Finished reading BDS"
     output
 
-//grid description section - section 2
-let readGDS (t:System.IO.Stream) = 
-    let secTwoStartPos = t.Position
-    let buffer = Array.zeroCreate 3
-    t.Read(buffer,0,3) |> ignore //TODO: insert check here
-    let secTwolength = getlen buffer
-    let numVertParams = t.ReadByte()
-    let PV = t.ReadByte() //location of list of vert params or location of list of numbers of points in each row OR 255 if neither
-    let datarepType = t.ReadByte() |> dataRepresentationType
-    printfn "Data Representation type is %s" datarepType
-    if datarepType <> "lat/long grid" then
-        failwithf "only doing lat/long grids for now"
-    //this part is specific to lat/long grids - other types of grids have different formatting
-    //CONFUSING NOTE - i is used for east west, but latitude is read first (N/S)
-    let ni = 256 * t.ReadByte() + t.ReadByte() //number of points for lat/lon
-    let nj = 256 * t.ReadByte() + t.ReadByte()
-    let la1 = readlat <| t.ReadByte() <| t.ReadByte() <| t.ReadByte()
-    let lo1 = readlon <| t.ReadByte() <| t.ReadByte() <| t.ReadByte()
-    let flags = t.ReadByte() |> getResolutionFlags
-    let la2 = readlat <| t.ReadByte() <| t.ReadByte() <| t.ReadByte()
-    let lo2 = readlon <| t.ReadByte() <| t.ReadByte() <| t.ReadByte()
-    let di = readlatFine <| t.ReadByte() <| t.ReadByte()
-    let dj = readlonFine <| t.ReadByte() <| t.ReadByte()
-    let scanflags = t.ReadByte() |> getScanningFlags
-    let dummybytes = (secTwoStartPos + (secTwolength |> int64) - t.Position) |> int
-    let emptybuffer = Array.zeroCreate dummybytes
-    t.Read(emptybuffer,0,dummybytes) |> ignore
-    printfn "Starting latitude is %d with %i increments of %d and a final latitude of %d" la1 nj dj la2
-    printfn "Starting longitude is %d with %i increments of %d and a final longitude of %d" lo1 ni di lo2
-    printfn "Finished reading section 2"
-    ni,nj
 //section one is the product definition section
 let readSectionOne (t:System.IO.Stream) =
     let secOneStartPos = t.Position
@@ -232,11 +158,14 @@ let readSectionOne (t:System.IO.Stream) =
     let emptybuffer = Array.zeroCreate dummybytes
     t.Read(emptybuffer,0,dummybytes) |> ignore
     printfn "Finished reading section 1"
+    let mutable gds = None
+    let mutable bms = None
     if GDSPresent then
-        let x,y = readGDS t
+        gds <- readGDS t |> Some
         if BMSPresent then
-            readBMS t x y
-    readBDS t
+            bms <- readBMS t gds.Value
+    let points = readBDS t
+    BuildPointList bms.Value (points.ToArray()) gds.Value
 let readHeader (t:System.IO.Stream) =
     let buffer = Array.zeroCreate 8
     let checklen = t.Read(buffer,0,8)
@@ -259,6 +188,6 @@ let readHeader (t:System.IO.Stream) =
 
 let main argv = 
     let t = ReferenceFiles.Properties.Resources.Pacific_wind_7days
-    readHeader(new System.IO.MemoryStream(t)) |> ignore
+    readHeader(new System.IO.MemoryStream(t)).ForEach(fun r -> printfn "%s" r.Print)
     System.Console.ReadKey(true) |> ignore
     0 // return an integer exit code
