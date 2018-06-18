@@ -3,6 +3,7 @@
 @{
     ViewData["Title"] = "Home page";
 }
+<!-- style sheets in wwwroot/rss-->
 <!-- load d3 - library used for visualization-->
 <script src="//d3js.org/d3.v3.min.js" charset="utf-8"></script>
 <script src="//d3js.org/topojson.v1.min.js"></script>
@@ -11,7 +12,38 @@
     // create SVG part
     var width = 960,
         height = 1160;
-
+    var projection = d3.geo.mercator();
+    var path = d3.geo.path()
+        .projection(projection)
+        .pointRadius(2)
+        ;
+    var point =
+        {
+            "type": "FeatureCollection",
+            "features": [
+                    @foreach (var value in Model.values)
+                    {
+                        @:{
+                        @:"type": "Feature",
+                        @:"properties": {},
+                        @:"geometry": {
+                        @:"type": "Point",
+                        @:"coordinates": [
+                            @((value.Long/1000.0).ToString());
+                            @: ,
+                            @((value.Lat/1000.0).ToString());
+                        @:]
+                        @if (value != Model.values.Last())
+                        { 
+                        @:}},
+                        }
+                        else
+                        {
+                        @:}}
+                        }
+                    }
+            ]
+        };
     var svg = d3.select("body").append("svg")
         .attr("width", width)
         .attr("height", height);
@@ -21,13 +53,15 @@
         //now plot the world - nice trick here is that it seems to plot all the land as black by default which is nice and useful for this exercise as we are mostly interested in sea conditions
         svg.append("path")
             .datum(topojson.feature(world, world.objects.subunits))
-            .attr("d", d3.geo.path().projection(d3.geo.mercator()));
+            .attr("d", d3.geo.path().projection(projection));
+        //add points - use raw geojson for now
+        svg.append("path")
+            .datum(point)
+            .attr("d", path)
+            .attr("class", "WindPoint");
     });
 
 </script>
 Start of the C#
-@foreach (var value in Model.values)
-{
-    @(value.ToString() + "  ");
-}
+
 End of the C#

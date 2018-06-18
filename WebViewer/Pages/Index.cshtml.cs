@@ -9,7 +9,7 @@ namespace WebViewer.Pages
 {
     public class IndexModel : PageModel
     {
-        public List<float> values { get; set; }
+        public List<Core.Point> values { get; set; }
         public void OnGet()
         {
             var t = ReferenceFiles.Properties.Resources.Pacific_wind_7days;
