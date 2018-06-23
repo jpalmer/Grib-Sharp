@@ -4,13 +4,7 @@ open GDS
 type BMS (data:byte[] ,gds : GDS) =
     do printfn "x = %i y = %i expected size %i actual size %i" gds.X gds.Y ((gds.X * gds.Y)/8) (data.Length)
     //so - for some fun reason the C# bitarray is viewing the bits in the wrong order
-    //this code apparently reverses a byte - magic bit twiddling from stack overflow 
-    //(does seem crazy that 4 operations on 64 bit integers is a sane way to do this
-    do for i in 0 .. (data.Length-1) do
-        data.[i] <-  ((((uint64 data.[i]) * 0x80200802uL) &&& 0x0884422110uL) * 0x0101010101uL >>> 32) |> byte;
-    let bitarray = new System.Collections.BitArray(data)
-  //  member x.checkpos t = 
-    //    bitarray.[t]
+    let bitarray = new ReversedBitrray(data)
     member this.checkpos i j = 
         bitarray.[j*gds.X+i] //this will depend on the order of the bits - may need some more checking later
     member this.print() =

@@ -68,7 +68,8 @@ let readE b1 b2 =
     let i1,i2 = int b1,int b2
     //manual conversion to 16bit integer
     i1<<<8 ||| i2
-let readBDS (t:System.IO.Stream) =
+//D is decimal scale factor
+let readBDS (t:System.IO.Stream) D=
     printfn "WARNING - BDS data present but ignored for now - data processing will attempt to continue"
     let secStartPos = t.Position
     let buffer = Array.zeroCreate 3
@@ -79,6 +80,7 @@ let readBDS (t:System.IO.Stream) =
     //next is binary scale factor
     let E = readE (t.ReadByte()) (t.ReadByte())
     //bits 7-10 are a floating point rep of minimum number - 4 bytes is a float32
+    printfn "Scale factor E is %i" E
     let floatarr = Array.zeroCreate 4
     t.Read(floatarr,0,4) |> ignore
     let minvalue = BitConverter.ToSingle(floatarr |> Array.rev,0) //this value is also called R
@@ -92,13 +94,14 @@ let readBDS (t:System.IO.Stream) =
     let emptybuffer = Array.zeroCreate remainingBytes
     t.Read(emptybuffer,0,remainingBytes) |> ignore
     let output = new ResizeArray<_>()
-    let bitarray = new System.Collections.BitArray(emptybuffer)
+    let bitarray = ReversedBitrray(emptybuffer)
+    let decfactor = pown 10 D |> float32 |> fun t -> 1.0f/t
     for i in 0 .. bitsperpoint .. (bitarray.Length-bitsperpoint) do
         let mybits = new System.Collections.BitArray(bitsperpoint)
         for j in 0 .. (bitsperpoint-1) do
             mybits.[j] <- bitarray.[i+j]
         let myint = mybits |> Utils.getIntFromBitArray |> float32
-        let value = minvalue + (myint * (pown 2.0f E))
+        let value = (minvalue + (myint * (pown 2.0f E))) * decfactor
         output.Add(value)
 
        // printfn "%f" value
@@ -164,7 +167,7 @@ let readSectionOne (t:System.IO.Stream) =
         gds <- readGDS t |> Some
         if BMSPresent then
             bms <- readBMS t gds.Value
-    let points = readBDS t
+    let points = readBDS t D
     BuildPointList bms.Value (points.ToArray()) gds.Value
 let readHeader (t:System.IO.Stream) =
     let buffer = Array.zeroCreate 8

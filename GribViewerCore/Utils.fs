@@ -50,3 +50,14 @@ let readlonFine b1 b2  =
         b1*256 + b2
     else
         -(b1-128)*256 + b2
+//Some of the data needs to be read from the bits with a bitarray that reads the bits in the reverse order - this code handles that
+//TODO -  I think this will reverse the bytes in the input array - should actually create a copy
+type ReversedBitrray (data:byte[]) =
+     //this code apparently reverses a byte - magic bit twiddling from stack overflow 
+     //(does seem crazy that 4 operations on 64 bit integers is a sane way to do this
+    let newdata = data |> Array.map (fun t -> 
+        ((((uint64 t) * 0x80200802uL) &&& 0x0884422110uL) * 0x0101010101uL >>> 32) |> byte)
+    let bitarray = new System.Collections.BitArray(newdata)
+    member this.Item
+      with get(index) = bitarray.[index]
+    member x.Length = bitarray.Length
