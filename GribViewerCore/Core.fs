@@ -5,12 +5,18 @@ open Constants
 open Utils
 open BMS
 open GDS
+open System
+
 //GRIB file is downloaded from http://www.globalmarinenet.com/free-grib-file-downloads/
 //XY Grib appears to be capable of viewing this file - is very useful
 //TODO for tomorrow - tests around reading the grid section of a sample file
 
 
-
+type SectionOne = 
+    {   
+        D:int;
+        ParameterType: Parameters
+    }
 
 
 type PackingType = |GridPoint |SphericalHarmonic
@@ -38,13 +44,13 @@ type Point =
     {
         Lat : double; // in millidegrees
         Long : double; // in millidegrees
-        UWind : float32; // in m/s
-        VWind : float32; // in m/s
+        UWind : float32 Option; // in m/s
+        VWind : float32 Option; // in m/s
     }
     member x.Print =
-        sprintf "Lat: %f Long %f UWind %f VWind %f" x.Lat x.Long x.UWind x.VWind
+        sprintf "Lat: %f Long %f UWind %A VWind %A" x.Lat x.Long x.UWind x.VWind
 
-let BuildPointList (bms:BMS) (data: _ []) (gds : GDS) =
+let BuildPointList (bms:BMS) (data: _ []) (gds : GDS) (SecOne : SectionOne) =
     //need to make configurable - but for now assume data is read in the sane order
     //potentially data could be stored in a different order in other files
     //Also need to improve to allow for vwind - as well as uwind
@@ -57,11 +63,24 @@ let BuildPointList (bms:BMS) (data: _ []) (gds : GDS) =
                     {
                         Lat = gds.LatRange.[j];
                         Long = gds.LongRange.[i];
-                        UWind = data.[dataindex];
-                        VWind = 0.0f;
+                        UWind = match SecOne.ParameterType with |UWind -> data.[dataindex] |> Some |_ -> None;
+                        VWind = match SecOne.ParameterType with |VWind -> data.[dataindex] |> Some |_ -> None;
                     })
                 dataindex <- dataindex+1
     output
+
+let mergePointLists a b= 
+    //First build up dictionaries
+    let d2 = b |> Seq.map (fun t -> (t.Lat, t.Long),t) |> dict
+    a 
+    |> Seq.map (fun elem ->
+        let otherpoint = d2.[elem.Lat,elem.Long]
+        if elem.UWind = None then
+            {elem with UWind = otherpoint.UWind}
+        else
+            {elem with VWind = otherpoint.VWind}
+        )
+    
 
 let readE b1 b2 = 
     //E is the following - initial sign bit and then 15 other bits (int16)
@@ -69,7 +88,7 @@ let readE b1 b2 =
     //manual conversion to 16bit integer
     i1<<<8 ||| i2
 //D is decimal scale factor
-let readBDS (t:System.IO.Stream) D=
+let readBDS (t:System.IO.Stream) (secOne:SectionOne)=
     printfn "WARNING - BDS data present but ignored for now - data processing will attempt to continue"
     let secStartPos = t.Position
     let buffer = Array.zeroCreate 3
@@ -95,7 +114,7 @@ let readBDS (t:System.IO.Stream) D=
     t.Read(emptybuffer,0,remainingBytes) |> ignore
     let output = new ResizeArray<_>()
     let bitarray = ReversedBitrray(emptybuffer)
-    let decfactor = pown 10 D |> float32 |> fun t -> 1.0f/t
+    let decfactor = pown 10 secOne.D |> float32 |> fun t -> 1.0f/t
     for i in 0 .. bitsperpoint .. (bitarray.Length-bitsperpoint) do
         let mybits = new System.Collections.BitArray(bitsperpoint)
         for j in 0 .. (bitsperpoint-1) do
@@ -107,8 +126,19 @@ let readBDS (t:System.IO.Stream) D=
        // printfn "%f" value
     printfn "Finished reading BDS"
     output
-
+let readLastSection (t:System.IO.Stream) =
+    let buffer = Array.zeroCreate 4
+    t.Read(buffer,0,4) |> ignore
+    let gribchars = buffer.[0..3]
+    let str = new string(System.Text.ASCIIEncoding.ASCII.GetChars(gribchars))
+    if (str <> "7777") then
+        failwithf "Expected end of GRIB file (7777) but got %s" str
+    else
+        printfn "Finished parsing a section of the grib file"
 //section one is the product definition section
+
+
+
 let readSectionOne (t:System.IO.Stream) =
     let secOneStartPos = t.Position
     let buffer = Array.zeroCreate 3
@@ -124,8 +154,8 @@ let readSectionOne (t:System.IO.Stream) =
     printfn "%s" gridID
     let GDSPresent,BMSPresent = t.ReadByte() |> OtherSectionPresence
     
-    let parameterType = parameters.[t.ReadByte()]
-    printfn "Parameter is %s" parameterType
+    let parameterType = GetParameter <| t.ReadByte()
+    printfn "Parameter is %A" parameterType
     //next 3 byets are information about heights for the measurement - ignore for now
     t.ReadByte() |> ignore
     t.ReadByte() |> ignore
@@ -163,12 +193,19 @@ let readSectionOne (t:System.IO.Stream) =
     printfn "Finished reading section 1"
     let mutable gds = None
     let mutable bms = None
+    let SecOne = 
+        {
+            D = D;
+            ParameterType = parameterType
+        }
     if GDSPresent then
         gds <- readGDS t |> Some
         if BMSPresent then
             bms <- readBMS t gds.Value
-    let points = readBDS t D
-    BuildPointList bms.Value (points.ToArray()) gds.Value
+    let points = readBDS t SecOne
+    readLastSection t
+    BuildPointList bms.Value (points.ToArray()) gds.Value SecOne
+
 let readHeader (t:System.IO.Stream) =
     let buffer = Array.zeroCreate 8
     let checklen = t.Read(buffer,0,8)
@@ -191,6 +228,11 @@ let readHeader (t:System.IO.Stream) =
 
 let main argv = 
     let t = ReferenceFiles.Properties.Resources.Pacific_wind_7days
-    readHeader(new System.IO.MemoryStream(t)).ForEach(fun r -> printfn "%s" r.Print)
+    let stream = new System.IO.MemoryStream(t)
+    let points1 = readHeader(stream) //.ForEach(fun r -> printfn "%s" r.Print)
+    let points2 = readHeader(stream)//.ForEach(fun r -> printfn "%s" r.Print)
+    let merged = mergePointLists points1 points2
+    merged
+    |> Seq.iter (fun t -> printfn "%A" t)
     System.Console.ReadKey(true) |> ignore
     0 // return an integer exit code

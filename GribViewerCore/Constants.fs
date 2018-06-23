@@ -28,6 +28,13 @@ let parameters =
     |> Array.map (fun t -> (t.[0] |> int),t.[1])
     |> dict
 
+type Parameters = |UWind |VWind |Other of string
+
+let GetParameter t = 
+    match t with
+    |33 -> UWind
+    |34 -> VWind
+    |a  -> Other(parameters.[a])
 
 let OtherSectionPresence t = 
     let GDSPresence = (t&&&128)=128
