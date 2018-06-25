@@ -2,7 +2,7 @@
 
 open System
 open System.Runtime
-
+open Utils
 let weathercenters =  
     dict 
         [
@@ -28,7 +28,7 @@ let parameters =
     |> Array.map (fun t -> (t.[0] |> int),t.[1])
     |> dict
 
-type Parameters = |UWind |VWind |Other of string
+
 
 let GetParameter t = 
     match t with

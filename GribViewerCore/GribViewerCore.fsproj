@@ -12,6 +12,7 @@
     <Compile Include="Constants.fs" />
     <Compile Include="GDS.fs" />
     <Compile Include="BMS.fs" />
+    <Compile Include="BDS.fs" />
     <Compile Include="Core.fs" />
   </ItemGroup>
 

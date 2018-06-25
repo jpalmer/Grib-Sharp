@@ -61,3 +61,10 @@ type ReversedBitrray (data:byte[]) =
     member this.Item
       with get(index) = bitarray.[index]
     member x.Length = bitarray.Length
+
+type Parameters = |UWind |VWind |Other of string
+type SectionOne = 
+    {   
+        D:int;
+        ParameterType: Parameters
+    }
