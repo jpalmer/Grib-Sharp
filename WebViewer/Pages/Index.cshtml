@@ -11,7 +11,13 @@
     //My actual script to display the data
     // create SVG part
     var width = 960,
-        height = 1160;
+        height = 960,
+        scale0 = (width - 1) / 2 / Math.PI;
+    var zoom = d3.behavior.zoom() //zoom based on example here https://bl.ocks.org/mbostock/eec4a6cda2f573574a11
+        .translate([width / 2, height / 2])
+        .scale(scale0)
+        .scaleExtent([scale0, 8 * scale0])
+        .on("zoom", zoomed);
     var projection = d3.geo.mercator();
     var path = d3.geo.path()
         .projection(projection)
@@ -47,19 +53,40 @@
     var svg = d3.select("body").append("svg")
         .attr("width", width)
         .attr("height", height);
+
+    var g = svg.append("g"); //not sure what the g is for
+
+    svg.append("rect")
+        .attr("class", "overlay")
+        .attr("width", width)
+        .attr("height", height);
+
+    svg
+        .call(zoom)
+        .call(zoom.event);
     //load world data - this is based on data from geocommons.com which should be all public data
     d3.json("world.json", function (error, world) {
         if (error) return console.error(error);
         //now plot the world - nice trick here is that it seems to plot all the land as black by default which is nice and useful for this exercise as we are mostly interested in sea conditions
-        svg.append("path")
+        g.append("path")
             .datum(topojson.feature(world, world.objects.subunits))
             .attr("d", d3.geo.path().projection(projection));
         //add points - use raw geojson for now
-        svg.append("path")
+        g.append("path")
             .datum(point)
             .attr("d", path)
             .attr("class", "WindPoint");
     });
+    function zoomed() {
+        projection
+            .translate(zoom.translate())
+            .scale(zoom.scale());
+
+        g.selectAll("path")
+            .attr("d", path);
+    }
+
+    d3.select(self.frameElement).style("height", height + "px");
 
 </script>
 Start of the C#
