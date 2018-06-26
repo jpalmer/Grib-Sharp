@@ -13,10 +13,8 @@
     var width = 960,
         height = 960,
         scale0 = (width - 1) / 2 / Math.PI;
-    var zoom = d3.behavior.zoom() //zoom based on example here https://bl.ocks.org/mbostock/eec4a6cda2f573574a11
-        .translate([width / 2, height / 2])
-        .scale(scale0)
-        .scaleExtent([scale0, 8 * scale0])
+    var zoom = d3.behavior.zoom()
+        .scaleExtent([1, 8])
         .on("zoom", zoomed);
     var projection = d3.geo.mercator();
     var path = d3.geo.path()
@@ -78,12 +76,7 @@
             .attr("class", "WindPoint");
     });
     function zoomed() {
-        projection
-            .translate(zoom.translate())
-            .scale(zoom.scale());
-
-        g.selectAll("path")
-            .attr("d", path);
+        g.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
     }
 
     d3.select(self.frameElement).style("height", height + "px");
