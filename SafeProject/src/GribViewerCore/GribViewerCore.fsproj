@@ -1,13 +1,13 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
     <OutputType>Library</OutputType>
-    <DebugType>portable</DebugType>
-    <Configurations>Debug;Release;AppVeyor</Configurations>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
+    <ProjectReference Include="..\ReferenceFiles\ReferenceFiles.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+  <Compile Include="../Shared/Shared.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="Constants.fs" />
     <Compile Include="GDS.fs" />
@@ -15,9 +15,4 @@
     <Compile Include="BDS.fs" />
     <Compile Include="Core.fs" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ReferenceFiles\ReferenceFiles.csproj" />
-  </ItemGroup>
-
 </Project>

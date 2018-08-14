@@ -7,7 +7,7 @@ open BMS
 open GDS
 open BDS
 open System
-
+open Shared
 //GRIB file is downloaded from http://www.globalmarinenet.com/free-grib-file-downloads/
 //XY Grib appears to be capable of viewing this file - is very useful
 //TODO for tomorrow - tests around reading the grid section of a sample file
@@ -15,16 +15,7 @@ open System
 
 
 
-//needs functions for total windspeed and direction
-type Point = 
-    {
-        Lat : double; // in millidegrees
-        Long : double; // in millidegrees
-        UWind : float32 Option; // in m/s
-        VWind : float32 Option; // in m/s
-    }
-    member x.Print =
-        sprintf "Lat: %f Long %f UWind %A VWind %A" x.Lat x.Long x.UWind x.VWind
+
 
 let BuildPointList (bms:BMS) (data: _ []) (gds : GDS) (secOne : SectionOne) =
     //need to make configurable - but for now assume data is read in the sane order
@@ -156,10 +147,9 @@ let readHeader (t:System.IO.Stream) =
             readSectionOne t
 
  
-
 let main argv = 
     let t = ReferenceFiles.Properties.Resources.Pacific_wind_7days
-    let stream = new System.IO.MemoryStream(t)
+    let stream =  new System.IO.MemoryStream(System.Text.Encoding.UTF8.GetBytes(t));
     let points1 = readHeader(stream) //.ForEach(fun r -> printfn "%s" r.Print)
     let points2 = readHeader(stream)//.ForEach(fun r -> printfn "%s" r.Print)
     let merged = mergePointLists points1 points2

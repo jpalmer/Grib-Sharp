@@ -3,6 +3,7 @@
 //vector field from here: http://bl.ocks.org/newby-jay/767c5ffdbbe43b65902f
 //Apache licence
 
+//Will need to construct some sort of interpolator object to get this to work - beyond my JS for now
 
 // Jay Newby 2014
 // http://people.mbi.ohio-state.edu/newby.23/
@@ -11,7 +12,7 @@
 // Based on the global weather visualization,
 // http://earth.nullschool.net/ by Cameron Beccario
 //////////////////////////////////////////////////
-(function animation() {
+(function animation(data) {
     // vector field data
     var gamma = 2, c = 10, dt = 0.005,
         X0 = [], Y0 = [], // to store initial starting locations
@@ -80,10 +81,13 @@
     function draw() {
         g.fillRect(0, 0, width, height); // fades all existing curves by a set amount determined by fillStyle (above), which sets opacity using rgba
         for (var i = 0; i < M; i++) { // draw a single timestep for every curve
+            var elem = data[i];
             var dr = F(X[i], Y[i]);
             g.beginPath();
-            g.moveTo(xMap(X[i]), yMap(Y[i])); // the start point of the path
-            g.lineTo(xMap(X[i] += dr[0] * dt), yMap(Y[i] += dr[1] * dt)); // the end point
+            //g.moveTo(xMap(X[i]), yMap(Y[i])); // the start point of the path
+            g.moveTo(elem.X, elem.Y); //startpoint
+            //g.lineTo(xMap(X[i] += dr[0] * dt), yMap(Y[i] += dr[1] * dt)); // the end point
+            g.lineTo(elem.X )
             g.stroke(); // final draw command
             if (age[i]++ > MaxAge) {
                 // incriment age of each curve, restart if MaxAge is reached

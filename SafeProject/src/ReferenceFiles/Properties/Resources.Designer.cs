@@ -94,10 +94,9 @@ namespace ReferenceFiles.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static byte[] Pacific_wind_7days {
+        public static string Pacific_wind_7days {
             get {
-                object obj = ResourceManager.GetObject("Pacific_wind_7days", resourceCulture);
-                return ((byte[])(obj));
+                return ResourceManager.GetString("Pacific_wind_7days", resourceCulture);
             }
         }
     }
