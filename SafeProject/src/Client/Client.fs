@@ -10,7 +10,9 @@ open Fable.PowerPack.Fetch
 open Shared
 
 open Fulma
-
+//my additional opens
+open Fable.Import //D3
+open Fable.Core //needed for U3 used in fable d3
 
 // The model holds data that you want to keep track of while the application is running
 // in this case, we are keeping track of a counter
@@ -44,8 +46,37 @@ let update (msg : Msg) (currentModel : Model) : Model * Cmd<Msg> =
         let nextModel = { Counter = Some initialCount }
         nextModel, Cmd.none
     | _ -> currentModel, Cmd.none
+let width = 500.
+let height = 100.
+let random = new System.Random()
+let dataset = Array.init 25 (fun _ -> (random.Next(3,25)))
+let barHeight x = x * 5 
+let barPadding = 1.
+let dataSetLength = float dataset.Length
+let svg = Fable.Import.D3.Globals.select("#display")
+                                 .append("svg")
+                                 .attr("width", U3.Case1 width)
+                                 .attr("height", U3.Case1 height)
+svg.selectAll("rect")
+    .data(dataset)
+|> fun x -> (unbox<D3.Selection.Update<int>> x).enter()
+|> fun x -> x.append("rect")
+|> fun x -> x.attr("width", fun _ _ _ -> U3.Case1 (System.Math.Abs(width / dataSetLength - barPadding)))
+                .attr("height", fun data _ _ -> U3.Case1 (float data * 4.))
+                .attr("x", fun _ x _ -> U3.Case1 (x * (width/dataSetLength))) 
+                .attr("y", fun data _ _ -> U3.Case1 (height - float data * 4.))
+                .attr("fill", fun data _ _ -> U3.Case2 (sprintf "rgb(63,%A,150)" (data * 10))) 
+|> ignore
+            
 
-
+svg.selectAll("text")
+    .data(dataset)
+|> fun x -> (unbox<D3.Selection.Update<int>> x).enter()
+|> fun x -> x.append("text")
+|> fun x -> x.text(fun data _ _ -> U3.Case2 (string data))
+             .attr("x", fun _ x _ -> U3.Case1 (x * (width/dataSetLength))) 
+             .attr("y", fun data _ _ -> U3.Case1 (height - (float data * 4.)))
+|> ignore
 let safeComponents =
     let components =
         span [ ]
@@ -69,7 +100,7 @@ let show = function
 | { Counter = None   } -> "Loading..."
 
 let AddGribData (m:Model) = 
-    m.Counter.Value.Count |> fun t -> t.ToString() |> sprintf "%i points in grib file"
+    sprintf "%i points in Grib file" <| m.Counter.Value.Count 
 
 let button txt onClick =
     Button.button
@@ -87,12 +118,14 @@ let view (model : Model) (dispatch : Msg -> unit) =
 
           Container.container []
               [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ]
-                    [ Heading.h3 [] [ str ("Grib Data " + AddGribData model) ] ]
+                    [ Heading.h3 [] [ str ("Grib Data " + AddGribData model + svg.ToString()) ] ]
+                Columns.columns []
+                    [ Column.column [] [ str "-"  ]
+                      Column.column [] [ str "+"  ] ] 
               ]
-
           Footer.footer [ ]
                 [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ]
-                    [ safeComponents ] ] ]
+                    [ safeComponents ] ]  ]
 
 
 #if DEBUG
