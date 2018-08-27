@@ -53,7 +53,7 @@ let dataset = Array.init 25 (fun _ -> (random.Next(3,25)))
 let barHeight x = x * 5 
 let barPadding = 1.
 let dataSetLength = float dataset.Length
-let svg = Fable.Import.D3.Globals.select("#display")
+let svg = Fable.Import.D3.Globals.select("body")
                                  .append("svg")
                                  .attr("width", U3.Case1 width)
                                  .attr("height", U3.Case1 height)
@@ -116,10 +116,10 @@ let view (model : Model) (dispatch : Msg -> unit) =
                 [ Heading.h2 [ ]
                     [ str "SAFE Template" ] ] ]
 
-          Container.container []
-              [ Content.content [ Content.Modifiers [ Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ]
+          Container.container  []
+              [ Content.content [ Content.Modifiers [   Modifier.TextAlignment (Screen.All, TextAlignment.Centered) ] ]
                     [ Heading.h3 [] [ str ("Grib Data " + AddGribData model + svg.ToString()) ] ]
-                Columns.columns []
+                Columns.columns [ ]
                     [ Column.column [] [ str "-"  ]
                       Column.column [] [ str "+"  ] ] 
               ]
