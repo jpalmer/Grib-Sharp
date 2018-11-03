@@ -29,9 +29,8 @@ module Client =
         abstract feature : topology: obj * geoObject: obj -> obj
         abstract mesh : topology: obj * geoObject: obj * filter: (obj * obj -> bool) -> obj
         //This doesn't compile - how to fix???????????
-    type dummy() = 
-        [<Direct "g.Attr(\"transform\",\"translate(\"d3.event.translate\")\")" >]
-        static member zoomed = X<_>
+
+
     let topojson : ITopoJson =
         JS.Global?topojson
     let projection = D3.Geo.Mercator()
@@ -45,7 +44,7 @@ module Client =
                     .Attr("width", width)
                     .Attr("height", height)
 
-        let g = svg.Append("g"); //not sure what the g is for
+        let g = svg.Append("g"); //not sure what the g is for but it makes things work
         g.Append("path")
             .Datum(topojson.feature(world, world?objects?subunits))
             .Attr("d", D3.Geo.Path().Projection(projection)) |> ignore 
@@ -53,8 +52,8 @@ module Client =
         let data = Server.GetWind "Pacific.wind.7days.grb"
         let path = D3.Geo.Path().Projection(projection).PointRadius(2.)
 
-        let zoom =new System.Action<_>(fun  _ -> g.Attr("transform", "translate("+D3.Event.JS?translate+")") |> ignore)
-        svg.Call(zoom) |> ignore
+   //     let zoom =new System.Action<_>(fun  _ -> g.Attr("transform", "translate("+D3.Event?translate+")") |> ignore)
+     //   svg.Call(zoom) |> ignore
         let TopoJsonData = 
             {
                 ``type`` = "FeatureCollection";
