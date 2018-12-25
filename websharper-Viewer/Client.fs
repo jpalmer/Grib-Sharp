@@ -6,6 +6,7 @@ open WebSharper.UI
 open WebSharper.UI.Client
 open WebSharper.UI.Html
 open WebSharper.D3
+open WebSharper.D3
 [<JavaScript>]
 module Client =
     type topoJsonPointDetails = 
@@ -52,8 +53,9 @@ module Client =
         let data = Server.GetWind "Pacific.wind.7days.grb"
         let path = D3.Geo.Path().Projection(projection).PointRadius(2.)
 
-   //     let zoom =new System.Action<_>(fun  _ -> g.Attr("transform", "translate("+D3.Event?translate+")") |> ignore)
-     //   svg.Call(zoom) |> ignore
+        let zoomed = new System.Action(fun  _ -> g.Attr("transform", "translate("+D3.Event?translate+")") |> ignore)
+        let zoom = D3.Behavior.Zoom().ScaleExtent(1., 8.).On(ZoomType.Zoom, zoomed)
+        svg.Call(As<Function> zoom) |> ignore       
         let TopoJsonData = 
             {
                 ``type`` = "FeatureCollection";

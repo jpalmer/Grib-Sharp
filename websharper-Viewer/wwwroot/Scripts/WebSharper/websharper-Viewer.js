@@ -1,7 +1,7 @@
 (function()
 {
  "use strict";
- var Global,websharper_Viewer,Client,topoJsonPointDetails,topoJsonPoint,topoJsonParentObject,SC$1,JSON,WebSharper,Remoting,AjaxRemotingProvider,UI,Var$1,d3,geo,Submitter,Arrays,View,Concurrency,Doc,AttrProxy;
+ var Global,websharper_Viewer,Client,topoJsonPointDetails,topoJsonPoint,topoJsonParentObject,SC$1,JSON,WebSharper,Remoting,AjaxRemotingProvider,UI,Var$1,d3,geo,Submitter,behavior,Arrays,View,Concurrency,Doc,AttrProxy;
  Global=self;
  websharper_Viewer=Global.websharper_Viewer=Global.websharper_Viewer||{};
  Client=websharper_Viewer.Client=websharper_Viewer.Client||{};
@@ -18,6 +18,7 @@
  d3=Global.d3;
  geo=d3&&d3.geo;
  Submitter=UI&&UI.Submitter;
+ behavior=d3&&d3.behavior;
  Arrays=WebSharper&&WebSharper.Arrays;
  View=UI&&UI.View;
  Concurrency=WebSharper&&WebSharper.Concurrency;
@@ -46,14 +47,19 @@
  };
  Client.Main=function()
  {
-  var world,rvInput,g,submit,data,path,TopoJsonData,vReversed;
-  world=JSON.parse((new AjaxRemotingProvider.New()).Sync("websharper-Viewer:websharper_Viewer.Server.GetWorld:-1685810977",[]));
+  var world,rvInput,svg,g,submit,data,path,TopoJsonData,vReversed;
+  world=JSON.parse((new AjaxRemotingProvider.New()).Sync("websharper-Viewer:websharper_Viewer.Server.GetWorld:-760671193",[]));
   rvInput=Var$1.Create$1("");
-  g=d3.select("#map").append("svg").attr("width",500).attr("height",500).append("g");
+  svg=d3.select("#map").append("svg").attr("width",500).attr("height",500);
+  g=svg.append("g");
   g.append("path").datum(Client.topojson().feature(world,world.objects.subunits)).attr("d",geo.path().projection(Client.projection()));
   submit=Submitter.CreateOption(rvInput.get_View());
-  data=(new AjaxRemotingProvider.New()).Sync("websharper-Viewer:websharper_Viewer.Server.GetWind:1588843736",["Pacific.wind.7days.grb"]);
+  data=(new AjaxRemotingProvider.New()).Sync("websharper-Viewer:websharper_Viewer.Server.GetWind:-1694120067",["Pacific.wind.7days.grb"]);
   path=geo.path().projection(Client.projection()).pointRadius(2);
+  svg.call(behavior.zoom().scaleExtent([1,8]).on("zoom",function()
+  {
+   g.attr("transform","translate("+d3.event.translate+")");
+  }));
   TopoJsonData=topoJsonParentObject.New("FeatureCollection",Arrays.map(function(p)
   {
    return topoJsonPoint.New("Feature",topoJsonPointDetails.New("Point",[p.Long/1000,p.Lat/1000]));
