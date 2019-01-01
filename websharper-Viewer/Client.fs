@@ -36,21 +36,35 @@ module Client =
         do points |> Array.iter(fun p -> Data.[latmap.[p.Lat],longmap.[p.Long]] <- {x=p.WindSpeed;y=0.0} )
         let points = points |> Array.map(fun t -> {position = {x=t.Long/1000.0;y=t.Lat/1000.0}; velocity = {x=t.WindSpeed;y=1.0}})
         member x.Points = points
+    let RNG = new System.Random()
     let Animate (selection:Selection<windPoint>) = 
-
+        let totalLength = "10"
         selection
+            .Append("line")
             .Attr("x1",fun (t:windPoint) -> t.position.Project projection |> fst)
             .Attr("y1",fun (t:windPoint) -> t.position.Project projection |> snd)
             .Attr("x2",fun (t:windPoint) -> t.update.position.Project projection |> fst)
             .Attr("y2",fun (t:windPoint) -> t.update.position.Project projection |> snd)
-            .Attr("stroke","black")
+            .Attr("stroke","red")
             .Style("opacity", 0.5)
-            (*
+            .Attr("stroke-dasharray", fun (t:windPoint) -> 
+                let (sx,sy) = t.position.Project projection
+                let (ex,ey) = t.update.position.Project projection
+                let len = {x=sx-ex;y=sy-ey}.Length |> int
+                sprintf "%i %i" len len
+                )
+            // Set the intial starting position so that only the gap is shown by offesetting by the total length of the line
+            .Attr("stroke-dashoffset", fun (t:windPoint) -> 
+                let (sx,sy) = t.position.Project projection
+                let (ex,ey) = t.update.position.Project projection
+                {x=sx-ex;y=sy-ey}.Length
+                )
+            // Then the following lines transition the line so that the gap is hidden...
             .Transition()
-                .Ease("linear")
-                .Delay(100)
-                .Duration(1000)
-                *)
+            .Duration(5000)
+            .Ease("quad") //Try linear, quad, bounce... see other examples here - http://bl.ocks.org/hunzy/9929724
+            .Attr("stroke-dashoffset", 0)
+            
             |> ignore
         ()
     let topojson : ITopoJson =
@@ -124,11 +138,10 @@ module Client =
   (grid)
     .map(transform)
     *)
-                    let interpolator = WindInterpolator(data).Points
+                    let interpolator = WindInterpolator(data).Points |> Array.filter(fun _ -> RNG.NextDouble() < 0.1)
                     g.SelectAll("line")
                      .Data(interpolator)
                      .Enter()
-                     .Append("line")
                      .Call(Animate)
                      |> ignore
                      
@@ -138,7 +151,7 @@ module Client =
                      .Attr("cx",fun (d:Server.Point) -> (projection.Apply (d.Long/1000.0,d.Lat/1000.0 ) |> fst ))
                      .Attr("cy",fun (d:Server.Point) -> (projection.Apply (d.Long/1000.0,d.Lat/1000.0 ) |> snd ))
                      .Attr("fill",fun d -> rgb d )
-                     .Attr("r",fun d -> "1px" )
+                     .Attr("r",fun d -> "0.1px" )
                      |> ignore
 
 

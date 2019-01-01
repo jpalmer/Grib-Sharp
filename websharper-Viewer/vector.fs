@@ -13,6 +13,8 @@ module Vector =
             y : double;
         }
         static member FromPolar r theta = {x = r * cos(theta); y = r * sin(theta)}
+        static member Subtract a b = 
+            {x=a.x-b.x;y=a.y-b.y }
         member x.Length = x.x*x.x+x.y*x.y |> sqrt    
         member x.Scale l = 
             let mylen = x.Length

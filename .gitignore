@@ -261,3 +261,4 @@ __pycache__/
 *.pyc
 */coverage.json
 */coverage.xml
+websharper-Viewer/wwwroot/*

@@ -11,7 +11,7 @@ module Server =
     ///Try to get the parsed data
     [<Rpc>]
     let GetWind (arg:string) =  
-        let t = Core.readHeader(System.IO.File.OpenRead(arg)).ToArray() |> Array.iter (fun t -> t.Print |> printfn "%s")
+        let t = Core.readHeader(System.IO.File.OpenRead(arg)).ToArray() |> Array.take 1 |> Array.iter (fun t -> t.Print |> printfn "%s")
         Core.readHeader(System.IO.File.OpenRead(arg)).ToArray() 
         |> Array.filter (fun t -> t.UWind.IsSome && t.UWind.IsSome) // TODO - bug only gets uwind at the moment
         |> Array.map (fun t -> 
