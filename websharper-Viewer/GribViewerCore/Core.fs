@@ -52,10 +52,12 @@ let mergePointLists a b=
     a 
     |> Seq.map (fun elem ->
         let otherpoint = d2.[elem.Lat,elem.Long]
+        let mutable returnvalue = elem
         if elem.UWind = None then
-            {elem with UWind = otherpoint.UWind}
-        else
-            {elem with VWind = otherpoint.VWind}
+            returnvalue <- {returnvalue with UWind = otherpoint.UWind}
+        if elem.VWind = None then
+            returnvalue <- {returnvalue with VWind = otherpoint.VWind}
+        returnvalue
         )
     
 let readLastSection (t:System.IO.Stream) =

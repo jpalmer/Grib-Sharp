@@ -1,4 +1,4 @@
-namespace websharper_Viewer
+namespace Viewer
 
 open WebSharper
 open WebSharper.Sitelets
