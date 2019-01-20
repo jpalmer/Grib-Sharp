@@ -36,6 +36,9 @@ module.exports = {
         symlinks: false,
         modules: [resolve("../../node_modules/")]
     },
+    externals: {
+        "topojson": "topojson",
+      },
     devServer: {
         proxy: {
             '/api/*': {

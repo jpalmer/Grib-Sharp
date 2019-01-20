@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ReferenceFiles\ReferenceFiles.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Utils.fs" />
+    <Compile Include="Constants.fs" />
+    <Compile Include="GDS.fs" />
+    <Compile Include="BMS.fs" />
+    <Compile Include="BDS.fs" />
+    <Compile Include="Core.fs" />
+  </ItemGroup>
+</Project>

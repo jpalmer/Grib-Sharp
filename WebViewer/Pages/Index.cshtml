@@ -61,7 +61,7 @@
 
     svg
         .call(zoom)
-        .call(zoom.event);
+       // .call(zoom.event);
     //load world data - this is based on data from geocommons.com which should be all public data
     d3.json("world.json", function (error, world) {
         if (error) return console.error(error);
