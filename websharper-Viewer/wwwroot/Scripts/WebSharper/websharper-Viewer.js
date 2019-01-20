@@ -1,7 +1,7 @@
 (function()
 {
  "use strict";
- var Global,Viewer,Server,Point,topoJson,topoJsonPointDetails,topoJsonPoint,topoJsonParentObject,Vector,Vector$1,Client,windPoint,WebSharper,Obj,WindInterpolator,SC$1,IntelliFactory,Runtime,Math,Arrays,Collections,Dictionary,JSON,Remoting,AjaxRemotingProvider,UI,Var$1,d3,geo,Submitter,behavior,View,Concurrency,Doc,AttrProxy,Operators;
+ var Global,Viewer,Server,Point,topoJson,topoJsonPointDetails,topoJsonPoint,topoJsonParentObject,Vector,Vector$1,Client,windPoint,WebSharper,Obj,WindInterpolator,SC$1,IntelliFactory,Runtime,Math,Arrays,Collections,Dictionary,JSON,Remoting,AjaxRemotingProvider,UI,Var$1,d3,geo,Submitter,behavior,View,Random,Concurrency,Doc,AttrProxy,Operators;
  Global=self;
  Viewer=Global.Viewer=Global.Viewer||{};
  Server=Viewer.Server=Viewer.Server||{};
@@ -34,6 +34,7 @@
  Submitter=UI&&UI.Submitter;
  behavior=d3&&d3.behavior;
  View=UI&&UI.View;
+ Random=WebSharper&&WebSharper.Random;
  Concurrency=WebSharper&&WebSharper.Concurrency;
  Doc=UI&&UI.Doc;
  AttrProxy=UI&&UI.AttrProxy;
@@ -166,13 +167,13 @@
  Client.Main=function()
  {
   var world,rvInput,svg,g,submit,data,vReversed;
-  world=JSON.parse((new AjaxRemotingProvider.New()).Sync("websharper-Viewer:Viewer.Server.GetWorld:-1635389890",[]));
+  world=JSON.parse((new AjaxRemotingProvider.New()).Sync("websharper-Viewer:Viewer.Server.GetWorld:-1627845098",[]));
   rvInput=Var$1.Create$1("");
   svg=d3.select("#map").append("svg").attr("width",2000).attr("height",500);
   g=svg.append("g");
   g.append("path").datum(Client.topojson().feature(world,world.objects.subunits)).attr("d",geo.path().projection(Client.projection()));
   submit=Submitter.CreateOption(rvInput.get_View());
-  data=(new AjaxRemotingProvider.New()).Sync("websharper-Viewer:Viewer.Server.GetWind:-2035211268",["Pacific.wind.7days.grb"]);
+  data=(new AjaxRemotingProvider.New()).Sync("websharper-Viewer:Viewer.Server.GetWind:1230251650",["Pacific.wind.7days.grb"]);
   geo.path().projection(Client.projection()).pointRadius(2);
   svg.call(behavior.zoom().scaleExtent([1,8]).on("zoom",function()
   {
@@ -185,7 +186,10 @@
   vReversed=View.MapAsync(function(a)
   {
    var interpolator,b,b$1;
-   return a!=null&&a.$==1?(interpolator=(new WindInterpolator.New(data)).get_Points(),(g.selectAll("line").data(interpolator).enter().append("line").call(Client.Animate),g.selectAll("circle").data(data).enter().append("circle").attr("cx",function(d)
+   return a!=null&&a.$==1?(new Random.New(),interpolator=Arrays.filter(function()
+   {
+    return Math.random()<0.1;
+   },(new WindInterpolator.New(data)).get_Points()),g.selectAll("line").data(interpolator).enter().append("line").call(Client.Animate),g.selectAll("circle").data(data).enter().append("circle").attr("cx",function(d)
    {
     return((Client.projection())([d.Long/1000,d.Lat/1000]))[0];
    }).attr("cy",function(d)
@@ -193,11 +197,11 @@
     return((Client.projection())([d.Long/1000,d.Lat/1000]))[1];
    }).attr("fill",Client.rgb).attr("r",function()
    {
-    return"1px";
+    return"0.3px";
    }),b=null,Concurrency.Delay(function()
    {
     return Concurrency.Return("");
-   }))):(b$1=null,Concurrency.Delay(function()
+   })):(b$1=null,Concurrency.Delay(function()
    {
     return Concurrency.Return("");
    }));
@@ -223,7 +227,19 @@
  };
  Client.Animate=function(selection)
  {
-  selection.attr("x1",function(t)
+  var _this;
+  function getlength(t)
+  {
+   var p,sy,sx,p$1,ey,ex;
+   p=t.position.Project(Client.projection());
+   sy=p[1];
+   sx=p[0];
+   p$1=t.get_update().position.Project(Client.projection());
+   ey=p$1[1];
+   ex=p$1[0];
+   return Math.sqrt((sx-ex)*(sx-ex)+(sy-ey)*(sy-ey));
+  }
+  (_this=selection.attr("x1",function(t)
   {
    return(t.position.Project(Client.projection()))[0];
   }).attr("y1",function(t)
@@ -235,7 +251,12 @@
   }).attr("y2",function(t)
   {
    return(t.get_update().position.Project(Client.projection()))[1];
-  }).attr("stroke","black").style("opacity",0.5);
+  }).attr("stroke","black").attr("stroke-dasharray",function(t)
+  {
+   var len,c;
+   len=(c=getlength(t),Global.String(c));
+   return len+" "+len;
+  }).attr("stroke-dashoffset",getlength).transition().duration(2000),_this.ease.apply(_this,["linear"])).attr("stroke-dashoffset",0);
  };
  Client.test=function()
  {

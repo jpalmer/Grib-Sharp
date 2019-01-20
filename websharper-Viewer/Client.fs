@@ -37,6 +37,10 @@ module Client =
         let points = points |> Array.map(fun t -> {position = {x=t.Long/1000.0;y=t.Lat/1000.0}; velocity = {x=t.WindSpeed;y=1.0}})
         member x.Points = points
     let Animate (selection:Selection<windPoint>) = 
+        let getlength (t:windPoint) =
+            let sx,sy = t.position.Project projection
+            let ex,ey = t.update.position.Project projection
+            (sx-ex)*(sx-ex)+(sy-ey)*(sy-ey) |> sqrt
 
         selection
             .Attr("x1",fun (t:windPoint) -> t.position.Project projection |> fst)
@@ -44,7 +48,13 @@ module Client =
             .Attr("x2",fun (t:windPoint) -> t.update.position.Project projection |> fst)
             .Attr("y2",fun (t:windPoint) -> t.update.position.Project projection |> snd)
             .Attr("stroke","black")
-            .Style("opacity", 0.5)
+            .Attr("stroke-dasharray",fun t -> let len = (getlength t).ToString()
+                                              len + " " + len)
+            .Attr("stroke-dashoffset", fun t -> getlength t)
+            .Transition()
+            .Duration(2000)
+            .Ease("linear")
+            .Attr("stroke-dashoffset", 0);
             (*
             .Transition()
                 .Ease("linear")
@@ -93,38 +103,12 @@ module Client =
                             }               
                     })
             }
-            (*
-        function lineAnimate(selection) {
-    selection
-    .attr({x1: 200, x2: 200})
-    .attr('y1', function(d) {return d;})
-    .attr('y2', function(d) {return d;})
-    .style('opacity', 0.5)
-    .transition()
-        .ease('linear')
-        .duration(1000)
-        .delay(function(d) {return d*10;})
-        .attr('x2', 500)
-    .transition()
-        .duration(1000)
-        .style('opacity', 0)
-    .each('end', function() {d3.select(this).call(lineAnimate)});
-}
-*)
         let vReversed =
             submit.View.MapAsync(function
                 | None -> async { return "" }
                 | Some input -> 
-                    // add circles to svg
-                    //WebSharper.JavaScript.Console.log data
-                //    let contours = D3.contours()
-        (*            contours = d3.contours()
-    .size([grid.n, grid.m])
-    .thresholds(thresholds)
-  (grid)
-    .map(transform)
-    *)
-                    let interpolator = WindInterpolator(data).Points
+                    let RNG = new System.Random()
+                    let interpolator = WindInterpolator(data).Points |> Array.filter (fun t -> RNG.NextDouble() < 0.1)
                     g.SelectAll("line")
                      .Data(interpolator)
                      .Enter()
@@ -138,7 +122,7 @@ module Client =
                      .Attr("cx",fun (d:Server.Point) -> (projection.Apply (d.Long/1000.0,d.Lat/1000.0 ) |> fst ))
                      .Attr("cy",fun (d:Server.Point) -> (projection.Apply (d.Long/1000.0,d.Lat/1000.0 ) |> snd ))
                      .Attr("fill",fun d -> rgb d )
-                     .Attr("r",fun d -> "1px" )
+                     .Attr("r",fun d -> "0.3px" )
                      |> ignore
 
 
